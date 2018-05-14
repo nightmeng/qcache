@@ -23,9 +23,12 @@ func TestCache(t *testing.T) {
 		t.Fatalf("put failed, %s\n", err)
 	}
 
-	if record, err := c.Get([]byte("xxxx")); err != nil {
+	if key, record, err := c.Get([]byte("xxxx")); err != nil {
 		t.Fatalf("get failed, %s\n", err)
 	} else {
+		if string(key) != "xxxx" {
+			t.Fatalf("invalid key")
+		}
 		if record == nil {
 			t.Fatalf("get failed, no data\n")
 		}
@@ -42,11 +45,15 @@ func TestCache(t *testing.T) {
 		t.Fatalf("del failed, %s\n", err)
 	}
 
-	if record, err := c.Get([]byte("xxxx")); err != nil {
+	if key, record, err := c.Get([]byte("xxxx")); err != nil {
 		t.Logf("we cannot find this record now")
 	} else {
+		if key != nil {
+			t.Fatalf("del failed, key exist\n")
+		}
+
 		if record != nil {
-			t.Fatalf("del failed, can not delete cache item\n")
+			t.Fatalf("del failed, record exist\n")
 		}
 	}
 }

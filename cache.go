@@ -12,7 +12,7 @@ var (
 
 type Cache interface {
 	Put(key []byte, record *Record) error
-	Get(key []byte) (record *Record, err error)
+	Get(prefix []byte) (key []byte, record *Record, err error)
 	Del(key []byte, record *Record) error
 	Close() error
 }
@@ -49,28 +49,28 @@ func (c *cache) Put(key []byte, record *Record) error {
 	}
 }
 
-func (c *cache) Get(key []byte) (record *Record, err error) {
+func (c *cache) Get(prefix []byte) (key []byte, record *Record, err error) {
 	txn := c.db.NewTransaction(false)
 
 	it := txn.NewIterator(badger.DefaultIteratorOptions)
 	defer it.Close()
-	prefix := append([]byte("c"), key...)
+	prefix = append([]byte("c"), prefix...)
 	it.Seek(prefix)
 
 	if it.ValidForPrefix(prefix) {
 		key := it.Item().Key()
 		data, err := it.Item().Value()
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
-		return &Record{
+		return extractKey(key), &Record{
 			Data: data,
 			Time: extractTime(key),
 		}, nil
 	}
 
-	return nil, ErrNotFound
+	return nil, nil, ErrNotFound
 }
 
 func (c *cache) Del(key []byte, record *Record) error {
