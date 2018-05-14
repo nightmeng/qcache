@@ -1,4 +1,4 @@
-package storage
+package qcache
 
 import (
 	"testing"
