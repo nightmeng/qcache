@@ -25,6 +25,7 @@ func NewCache(file string) (Cache, error) {
 	opts := badger.DefaultOptions
 	opts.Dir = file
 	opts.ValueDir = file
+	opts.ValueLogFileSize = 1 << 20
 
 	db, err := badger.Open(opts)
 	if err != nil {
